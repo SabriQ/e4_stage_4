@@ -63,7 +63,7 @@ void loop() {
       Serial.print("wrong ");}
     else{
       i=0;
-      Serial.print("terminated");}   
+      Serial.print("terminated ");}   
 //     Serial.print("--");Serial.print(i);Serial.println("");
       Serial.print(nose_poke_time);Serial.print(" ");
       Serial.println(choice_time);
