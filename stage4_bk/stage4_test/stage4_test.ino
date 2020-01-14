@@ -44,12 +44,9 @@ void loop() {
   // put your main code here, to run repeatedly:  
  
   for (i=0;i<trial_length;i++){
-    rec_process(process);
-//    Serial.print("|");Serial.print(temp[i]);Serial.print("--");Serial.print(Choice_class);Serial.println("");
-    process = temp[i]+1;  
-//    Serial.print(process);Serial.print("|-");Serial.println("");
-    rec_process(process);
-    process=0;
+    rec_process(0);
+//    Serial.print("|");Serial.print(temp[i]);Serial.print("--");Serial.print(Choice_class);Serial.println("");  
+    rec_process(1);
 //    Serial.print("-");Serial.print(temp[i]);Serial.print("--");Serial.print(Choice_class);Serial.println("");
     Serial.print("Sum: ");
     Serial.print(Trial_num);Serial.print(" ");
@@ -89,46 +86,30 @@ void rec_process(int process){
       digitalWrite(led,LOW);
       Serial.print("Stat2: choice");    
       if (ir[1]==1){
+        Serial.print("_l");
+        left_choice= left_choice + 1;   
+        if (temp[i]==0){
           rec_py_signal(49);
-          Serial.print("_l");
-          left_choice= left_choice + 1;   
-          Serial.println("  correct");
-          Choice_class = 1; }
+          Serial.println(" correct");
+          Choice_class = 1; }else{
+          Serial.println(" wrong");
+          Choice_class = 0;}
+      }
        else if (ir[2]==1){
-          right_choice=right_choice + 1;
-          Serial.print("_r") ;   
-          Serial.println("  wrong");
+        right_choice=right_choice + 1;
+        Serial.print("_r") ;  
+        if (temp[i]==1){  
+          Serial.println(" correct");
+          Choice_class = 1; }else{
+          Serial.println(" wrong");
           Choice_class = 0; }   
+       }
        else {
-          Serial.println("_terminated");
+          Serial.println(" terminated");
 //          Serial.print("on_signal: ");
 //          Serial.println(on_signal);
           Choice_class = 2; 
        }
-      break;
-      
-    case 2://wating for choice with led continuous on, mouse should choose right
-      do{led_on(led);}while(on_signal>0.5 && ir[1]==0 && ir[2]==0);
-      choice_time = millis();  
-      digitalWrite(led,LOW);  
-      Serial.print("Stat2: choice");    
-      if (ir[1]==1){
-          left_choice= left_choice + 1; 
-          Serial.print("_l") ;   
-          Serial.println("  wrong");
-          Choice_class = 0;}
-      else if (ir[2]==1){
-          rec_py_signal(50);
-          right_choice=right_choice + 1;
-          Serial.print("_r") ;   
-          Serial.println("  correct");
-          Choice_class = 1; }  
-       else {
-          Serial.println("_terminated");
-//          Serial.print("on_signal: ");
-//          Serial.println(on_signal);
-          Choice_class = 2; 
-       }  
       break;
       default:
       break;
