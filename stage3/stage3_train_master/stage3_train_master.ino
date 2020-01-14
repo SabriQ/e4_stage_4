@@ -2,6 +2,17 @@
 //nano在D3、D5、D6、D9、D10、D11引脚上有正弦波符号，通俗来讲就是可以输出PWM波的引脚注释
 //A5 SCl； A4 SDA  are used for IIC communication
 
+# include <Wire.h>
+byte send2slave1_num=0;
+
+//case 0 : go to context0. going leftly means go approaching the motor
+//case 1 : go to context1
+//case 2 : go to context2
+
+// in different slave
+//case for leds on/off
+//case for different leds for marking
+//case for outputs in ehy
 
 int ir_ll = A0;// infra red left-left lick
 int ir_lr = A1;// infra red left-right lick
@@ -21,7 +32,7 @@ float on_signal;
 int process =0;
 //in temp[60], 0 for left, 1 for right
 int temp[60] = {0,1,0,1,0,1,1,0,1,0,
-                1,1,1,1,0,0,0,0,1,0,
+                1,1,0,1,0,1,0,0,1,0,
                 0,1,1,0,0,1,1,1,0,0,
                 1,0,0,1,1,0,1,0,1,0,
                 0,1,1,0,0,1,0,1,0,1,
@@ -55,19 +66,26 @@ pinMode(ir_rl,INPUT);
 pinMode(ir_rr,INPUT);
 pinMode(ir_rs,INPUT);
 
+Wire.begin();
 Serial.begin(9600);
 }
 ////////////////////////////////////////////////
 void loop() {
-  // put your main code here, to run repeatedly:  
- 
-  for (i=0;i<trial_length;i++){
-    rec_process(process);
+  // put your main code here, to run repeatedly:
+  
+  //context initialization  @ context 0
+  write_data(1,send2slave1_num);
+  
+  for (i;i<trial_length;i++){  
+    rec_process(0);//waiting for nose-poke @ left-left
+    //rec_process(1);//waiting for nose-poke @ left-right
 //    Serial.print("|");Serial.print(temp[i]);Serial.print("--");Serial.print(Choice_class);Serial.println("");
-    process = temp[i]+1;  
-//    Serial.print(process);Serial.print("|-");Serial.println("");
-    rec_process(process);
-    process=0;
+    rec_process(2);//waiting for context enter
+    rec_process(3);//waiting for context exit
+    rec_process(4);//waiting for choice
+    rec_process(5);//waiting for context Reverse enter
+    rec_process(6);//waiting for context exit
+
 //    Serial.print("-");Serial.print(temp[i]);Serial.print("--");Serial.print(Choice_class);Serial.println("");
     Serial.print("Sum: ");
     Serial.print(Trial_num);Serial.print(" ");
@@ -83,8 +101,12 @@ void loop() {
       i=0;
       Serial.print("terminated ");}   
 //     Serial.print("--");Serial.print(i);Serial.println("");
-      Serial.print(nose_poke_time);Serial.print(" ");
-      Serial.println(choice_time);
+      Serial.print(np_time);Serial.print(" ");
+      Serial.print(ctx_ent_time);Serial.print(" ");
+      Serial.print(ctx_ext_time);Serial.print(" ");
+      Serial.print(choice_time);Serial.print(" ");
+      Serial.print(ctx_Rent_time);Serial.print(" ");
+      Serial.println(ctx_Rext_time);
      }
    Serial.println("All done!");
 }
@@ -92,117 +114,114 @@ void loop() {
 void rec_process(int process){
   switch (process)
   {
-    case 0://waiting for nosepoke
+    case 0://waiting for nosepoke @ left-left
         do{Read_ir();}while(ir[0]==0);
         np_time = millis();
         Serial.println("Stat1: nose_poke");
         rec_py_signal(48);//water_deliver for nosepoke @ left-left
-        //rec_py_signal(49);//water_deliver for nosepoke @ left-right
+        //rec_py_signal(49);//water_deliver for nosepoke @ left-right\
+        
+        //change context according to temp
+        if (temp[i]==0){send2slave1_num=0;}else{send2slave1_num=3;}
+        write_data(1,send2slave1_num);
         Trial_num =Trial_num+1;
         break;
-    case 1:// waiting for ctx_enter
+    case 1:///waiting for nosepoke @ left-right
+        do{Read_ir();}while(ir[1]==0);
+        np_time = millis();
+        Serial.println("Stat1: nose_poke");
+        //rec_py_signal(48);//water_deliver for nosepoke @ left-left
+        rec_py_signal(49);//water_deliver for nosepoke @ left-right
+        Trial_num =Trial_num+1;
+        break;
+    case 2:// waiting for ctx_enter
         do{Read_ir();}while(on_signal > 0.5 && ir[2]==0);
         ctx_ent_time = millis();
         Serial.println("Stat2: context_enter");
         break;
-    case 2:
+    case 3:// waiting for ctx_exit
         do{Read_ir();}while(on_signal > 0.5 && ir[5]==0);
         ctx_ext_time = millis();
         Serial.println("Stat3: context_exit");
         break;
-    case 3:
-        do{Read_ir();}while(on_signal > 0.5 &&ir[3]==0 && ir[4]==0);
+    case 4: //wating for choice 
+        do{Read_ir();}while(on_signal > 0.5 && ir[3]==0 && ir[4]==0);
+        
+        //chage context to the middle one
+        send2slave1_num = 2;
+        write_data(1,send2slave1_num);
+        
         choice_time = millis();
         Serial.println("Stat4: choice");   
         if (ir[3]==1){
-            rec_py_signal(49);
-            Serial.print("_l");
-            left_choice= left_choice + 1;   
+          Serial.print("_l");
+          left_choice= left_choice + 1; 
+          if (temp[i]==0){
+            rec_py_signal(50);  
             Serial.println(" correct");
-            Choice_class = 1; }
-         else if (ir[4]==1){
-            right_choice=right_choice + 1;
-            Serial.print("_r") ;   
+            Choice_class = 1;}else{
             Serial.println(" wrong");
-            Choice_class = 0; }   
+            Choice_class = 0;}
+            }
+         else if (ir[4]==1){
+            Serial.print("_r") ; 
+            right_choice=right_choice + 1;
+          if (temp[i]==1){
+            rec_py_signal(51);
+            Serial.println(" correct");
+            Choice_class = 1;}else{
+            Serial.println(" wrong");
+            Choice_class = 0;}
+            }   
          else {
             Serial.println(" terminated");
-            Choice_class = 2; 
-         }
+            Choice_class = 2; }
         break;
       
-    case 2://wating for choice with led continuous on, mouse should choose right
-      do{led_on(led);}while(on_signal>0.5 && ir[1]==0 && ir[2]==0);
-      choice_time = millis();  
-      digitalWrite(led,LOW);  
-      Serial.print("Stat2: choice");    
-      if (ir[1]==1){
-          left_choice= left_choice + 1; 
-          Serial.print("_l") ;   
-          Serial.println(" wrong");
-          Choice_class = 0;}
-      else if (ir[2]==1){
-          rec_py_signal(50);
-          right_choice=right_choice + 1;
-          Serial.print("_r") ;   
-          Serial.println(" correct");
-          Choice_class = 1; }  
-       else {
-          Serial.println(" terminated");
-//          Serial.print("on_signal: ");
-//          Serial.println(on_signal);
-          Choice_class = 2; 
-       }  
-      break;
-      default:
+    case 5:// waiting for Reverse ctx_enter
+        do{Read_ir();}while(on_signal > 0.5 && ir[5]==0);
+        ctx_Rent_time = millis();
+        Serial.println("Stat5: ctx_Rexit");
+        break;
+    case 6:// waiting for Reverse ctx_exit
+        do{Read_ir();}while(on_signal > 0.5 && ir[2]==0);
+        ctx_Rext_time = millis();
+        Serial.println("Stat6: ctx_Rexit");
+        break;  
+    default:
       break;
   }}  
 
 void rec_py_signal(int py_signal){
   switch (py_signal)
   {
-    case 48://nose_pump
-      digitalWrite(led,LOW);
-      water_deliver(pump_nose,10);
+    case 48://pump_ll
+      water_deliver(pump_ll,10);
       break;
-    case 49://left_pump
-      digitalWrite(led,LOW);
-      water_deliver(pump_left,10);
+    case 49://pump_lr
+      water_deliver(pump_lr,10);
       break;
-    case 50://right_pump
-      digitalWrite(led,LOW);
-      water_deliver(pump_right,10);
+    case 50://pump_rl
+      water_deliver(pump_rl,10);
+      break;
+    case 51://pump_rr
+      water_deliver(pump_rr,10);
+      break;
+    case 52://go to context 0
+      send2slave1_num = 0;
+      write_data(1,send2slave1_num);
+      break;
+    case 53://go to context 1
+      send2slave1_num = 1;
+      write_data(1,send2slave1_num);
+      break;
+    case 54://go to context 2
+      send2slave1_num = 2;
+      write_data(1,send2slave1_num);
       break;
     default:
     break;}}
   
-void led_flash(int port){
-    for(int j=0;j<50;j++){
-      analogWrite(led,j);
-      delay(1);
-      Read_ir();
-      if (Serial.available()){
-        int py_signal = Serial.read();
-      rec_py_signal(py_signal);}
-  }
-    for(int j=50;j>0;j--){
-      analogWrite(led,i);
-      delay(1);
-      Read_ir();
-      if (Serial.available()){
-        int py_signal = Serial.read();
-      rec_py_signal(py_signal);}
-  }
-}
-
-void led_on(int port){
-    analogWrite(led,50);
-    delay(10);
-    Read_ir();
-    if (Serial.available()){
-      int py_signal = Serial.read();
-      rec_py_signal(py_signal);}
-}
 
 void Read_ir(){
   on_signal = Read_digital(ON, 10);
@@ -219,20 +238,20 @@ void Read_ir(){
   float rr = Read_analog(ir_rr,10);
   float rs = Read_analog(ir_rs,10);
   
-  if (ll < 500 && ll >5){ir[0] = 1;}else{ir[0] = 0;}  
-  if (lr < 500 && lr >5){ir[1] = 1;}else{ir[1] = 0;}  
-  if (ls < 500 && ls >5){ir[2] = 1;}else{ir[2] = 0;}  
-  if (rl < 500 && rl >5){ir[3] = 1;}else{ir[3] = 0;}  
-  if (rr < 800 && rr >5){ir[4] = 1;}else{ir[4] = 0;}  
-  if (rs < 500 && rs >5){ir[5] = 1;}else{ir[5] = 0;} 
+  if (ll > 200 && ll <1005){ir[0] = 1;}else{ir[0] = 0;}  
+  if (lr > 150 && lr <1005){ir[1] = 1;}else{ir[1] = 0;}  
+  if (ls > 800 && ls <1005){ir[2] = 1;}else{ir[2] = 0;}  
+  if (rl > 500 && rl <1005){ir[3] = 1;}else{ir[3] = 0;}  
+  if (rr > 500 && rr <1005){ir[4] = 1;}else{ir[4] = 0;}  
+  if (rs > 500 && rs <1005){ir[5] = 1;}else{ir[5] = 0;} 
   
-  Serial.print(ll);Serial.print(" ");
-  Serial.print(lr);Serial.print(" ");
-  Serial.print(ls);Serial.print(" ");
-  Serial.print(rl);Serial.print(" ");
-  Serial.print(rr);Serial.print(" ");
-  Serial.println(rs);  
-  delay(100);
+//  Serial.print(ll);Serial.print(" ");
+//  Serial.print(lr);Serial.print(" ");
+//  Serial.print(ls);Serial.print(" ");
+//  Serial.print(rl);Serial.print(" ");
+//  Serial.print(rr);Serial.print(" ");
+//  Serial.println(rs);  
+//  delay(100);
   }else{
     i = 0;
     Trial_num = 0;  
@@ -259,6 +278,10 @@ float Read_digital(int digital, int times) {
   return sum / times;
 }
 void water_deliver(int pump, int milliseconds){
-digitalWrite(pump,HIGH);
-delay(milliseconds);
-digitalWrite(pump,LOW);  }
+  digitalWrite(pump,HIGH);
+  delay(milliseconds);
+  digitalWrite(pump,LOW);  }
+void write_data(int slave,byte send2slave1_num){
+  Wire.beginTransmission(slave);
+  Wire.write(send2slave1_num);
+  Wire.endTransmission();}
