@@ -14,7 +14,7 @@ float on_signal;
 int process =0;
 //in temp[60], 0 for left, 1 for right
 int temp[60] = {0,1,0,1,0,1,1,0,1,0,
-                1,1,1,1,0,0,0,0,1,0,
+                1,1,0,1,0,1,0,0,1,0,
                 0,1,1,0,0,1,1,1,0,0,
                 1,0,0,1,1,0,1,0,1,0,
                 0,1,1,0,0,1,0,1,0,1,
@@ -140,15 +140,15 @@ void rec_py_signal(int py_signal){
   {
     case 48://nose_pump
       digitalWrite(led,LOW);
-      water_deliver(pump_nose,10);
+      water_deliver(pump_nose,5);
       break;
     case 49://left_pump
       digitalWrite(led,LOW);
-      water_deliver(pump_left,10);
+      water_deliver(pump_left,6);
       break;
     case 50://right_pump
       digitalWrite(led,LOW);
-      water_deliver(pump_right,10);
+      water_deliver(pump_right,5);
       break;
     default:
     break;}}
@@ -191,12 +191,12 @@ void Read_ir(){
    if (Serial.available()){
     int py_signal = Serial.read();
     rec_py_signal(py_signal);}
-  float ir_nose_value = Read_analog(ir_nose,10);
-  float ir_left_value = Read_analog(ir_left,10);
-  float ir_right_value = Read_analog(ir_right,10); 
+  float ir_nose_value = Read_analog(ir_nose,5);
+  float ir_left_value = Read_analog(ir_left,5);
+  float ir_right_value = Read_analog(ir_right,5); 
   if (ir_nose_value< 500 && ir_nose_value>5) {ir[0] = 1;}else{ir[0] = 0;} 
-  if (ir_left_value< 500 && ir_left_value>5) {ir[1] = 1;}else{ir[1] = 0;} 
-  if (ir_right_value< 500 && ir_right_value>5) {ir[2] = 1;}else{ir[2] = 0;} 
+  if (ir_left_value< 920 && ir_left_value>5) {ir[1] = 1;}else{ir[1] = 0;} 
+  if (ir_right_value< 800 && ir_right_value>5) {ir[2] = 1;}else{ir[2] = 0;} 
 //  Serial.print(ir_nose_value);Serial.print(" ");
 //  Serial.print(ir_left_value);Serial.print(" ");
 //  Serial.print(ir_right_value);Serial.print(" ");

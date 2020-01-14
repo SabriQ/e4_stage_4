@@ -86,7 +86,7 @@ def stage_4(serial_ports=[r'/dev/ttyUSB0'],mouse_id=r"192137",note="train",descr
         #时间进度输出
             if "Sum" in show_info:
                 show_info = "Ready "
-        print(f"\r{show_info}".ljust(24),f"{round(time_elapse,1)}s".ljust(10),end="")
+        print(f"\r{show_info}".ljust(24),f"{round(time_elapse,1)}s".ljust(8),end="")
         #sys.stdout.write("time elapses %.1fs"%(time_elapse))
         #sys.stdout.write("\r")
         #another situation: for certain number of trials
