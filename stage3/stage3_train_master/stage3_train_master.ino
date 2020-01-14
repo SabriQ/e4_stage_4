@@ -31,7 +31,7 @@ float on_signal;
 
 //in temp[60], 0 for left, 1 for right
 int temp[60] = {0,1,0,1,0,1,1,0,1,0,
-                1,1,0,1,0,1,0,0,1,0,
+                1,0,1,1,0,1,0,0,1,0,
                 0,1,1,0,0,1,1,1,0,0,
                 1,0,0,1,1,0,1,0,1,0,
                 0,1,1,0,0,1,0,1,0,1,
@@ -144,8 +144,7 @@ void rec_process(int process){
         Serial.println("Stat3: context_exit");
         break;
     case 4: //wating for choice 
-        do{Read_ir();}while(on_signal > 0.5 && ir[3]==0 && ir[4]==0);
-        
+        do{Read_ir();}while(on_signal > 0.5 && ir[3]==0 && ir[4]==0);        
         //chage context to the middle one
         send2slave1_num = 2;
         write_data(1,send2slave1_num);
