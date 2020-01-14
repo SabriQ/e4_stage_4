@@ -27,9 +27,8 @@ int pump_ll = 2;
 int pump_lr = 3;
 int pump_rl = 4;
 int pump_rr = 5;
-
 float on_signal;
-int process =0;
+
 //in temp[60], 0 for left, 1 for right
 int temp[60] = {0,1,0,1,0,1,1,0,1,0,
                 1,1,0,1,0,1,0,0,1,0,
@@ -162,7 +161,7 @@ void rec_process(int process){
             Choice_class = 1;}else{
             Serial.println(" wrong");
             Choice_class = 0;}
-            }
+        }
          else if (ir[4]==1){
             Serial.print("_r") ; 
             right_choice=right_choice + 1;
