@@ -128,7 +128,7 @@ void rec_py_signal(int py_signal){
       break;
     case 49://left_pump
       digitalWrite(led,LOW);
-      water_deliver(pump_left,6);
+      water_deliver(pump_left,7);
       break;
     case 50://right_pump
       digitalWrite(led,LOW);
@@ -138,23 +138,24 @@ void rec_py_signal(int py_signal){
     break;}}
   
 void led_flash(int port){
-    for(int j=0;j<50;j++){
+  for (int k = 2;k>=0;k=k-1){
+    for(int j=0;j<=50;j=j+2){
       analogWrite(led,j);
-      delay(1);
+      delay(55-j);
       Read_ir();
       if (Serial.available()){
         int py_signal = Serial.read();
       rec_py_signal(py_signal);}
   }
-    for(int j=50;j>0;j--){
+    for(int j=50;j>=0;j=j-2){
       analogWrite(led,i);
-      delay(1);
+      delay(55-j);
       Read_ir();
       if (Serial.available()){
         int py_signal = Serial.read();
       rec_py_signal(py_signal);}
   }
-}
+}}
 
 void led_on(int port){
     analogWrite(led,50);
@@ -175,19 +176,19 @@ void Read_ir(){
    if (Serial.available()){
     int py_signal = Serial.read();
     rec_py_signal(py_signal);}
-  float ir_nose_value = Read_analog(ir_nose,10);
-  float ir_left_value = Read_analog(ir_left,10);
-  float ir_right_value = Read_analog(ir_right,10); 
+  float ir_nose_value = Read_analog(ir_nose,5);
+  float ir_left_value = Read_analog(ir_left,5);
+  float ir_right_value = Read_analog(ir_right,5); 
   if (ir_nose_value< 500 && ir_nose_value>5) {ir[0] = 1;}else{ir[0] = 0;} 
-  if (ir_left_value< 500 && ir_left_value>5) {ir[1] = 1;}else{ir[1] = 0;} 
-  if (ir_right_value< 500 && ir_right_value>5) {ir[2] = 1;}else{ir[2] = 0;} 
-//  Serial.print(ir_nose_value);Serial.print(" ");
-//  Serial.print(ir_left_value);Serial.print(" ");
-//  Serial.print(ir_right_value);Serial.print(" ");
-//  Serial.print(ir[0]);Serial.print(" ");
-//  Serial.print(ir[1]);Serial.print(" ");
-//  Serial.println(ir[2]); 
-//  delay(200);
+  if (ir_left_value< 900 && ir_left_value>5) {ir[1] = 1;}else{ir[1] = 0;} 
+  if (ir_right_value< 800 && ir_right_value>5) {ir[2] = 1;}else{ir[2] = 0;} 
+  Serial.print(ir_nose_value);Serial.print(" ");
+  Serial.print(ir_left_value);Serial.print(" ");
+  Serial.print(ir_right_value);Serial.print(" ");
+  Serial.print(ir[0]);Serial.print(" ");
+  Serial.print(ir[1]);Serial.print(" ");
+  Serial.println(ir[2]); 
+  delay(200);
   }else{
     i = 0;
     Trial_num = 0;  
