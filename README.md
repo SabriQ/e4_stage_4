@@ -30,16 +30,17 @@ Some details: A4, A5 in each Arduino nano are necessary for IIC communication.
 	Aim: for training, testing and recording with context dependent forced choice
 	Time_structure:
 		nosepoke
-		choice
-## Stage4
-	Aim: for training with led pattern dependent forced choice
-	Time_structure:
-		nosepoke
 		context enter
 		context exit
 		choice
 		context reverse enter
 		context reverse exit
+## Stage4
+	Aim: for training with led pattern dependent forced choice
+	Time_structure:
+		nosepoke
+		choice
+	
 ## Stage5
 	Aim: for training, testing and recording with (paired led and context) dependent forced choice
 	Time_structure:
