@@ -1,8 +1,8 @@
 //Master
 #include <Wire.h>
 
-byte send2slave1_num=0;
-String recfslave1_string;
+byte send2slave1_num=3;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -12,12 +12,12 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  send2slave1_num = 2-send2slave1_num;
+  send2slave1_num = 7-send2slave1_num;
   Serial.println(send2slave1_num);
   write_data(1,send2slave1_num);
   Serial.println("tst");
 //  read_data(1,1);
-  Serial.println(recfslave1_string);
+
   delay(4000);
 //write data to slave1
 
@@ -33,12 +33,4 @@ void write_data(int slave,byte num){
 Wire.beginTransmission(slave);
 Wire.write(num);
 Wire.endTransmission();
-}
-
-String read_data(int slave,int len){
-  if (Wire.requestFrom(slave,len)){
-    recfslave1_string = Wire.read();
-  }else{
-    Serial.println("no recieving");
-    }
 }

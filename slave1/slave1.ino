@@ -1,29 +1,30 @@
 #include <Wire.h>
 byte sending;
 byte num;
-int led2 = 2;
-int led3 = 3;
+int led_switch = 1;
+
+int led3 = 9;
 void setup() {
   // put your setup code here, to run once:
-  pinMode(led2,OUTPUT);
+
   pinMode(led3,OUTPUT);
-  digitalWrite(led2,LOW);
+
   digitalWrite(led3,LOW);
   Wire.begin(1);
   Wire.onReceive(receiveinfo);
-  Wire.onRequest(sendinfo);
+//  Wire.onRequest(sendinfo);
   Serial.begin(9600);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-rec(num);
+   rec();
 }
 //当从机接收到主机的字符，执行
 void receiveinfo() {  
   while (Wire.available()) {
     num = Wire.read();
-//    Serial.println(num);
+    if (num==3){;}else{led_switch=0;}
     }   
     }
         
@@ -32,10 +33,11 @@ void sendinfo(){
   Wire.write(sending);
 }
 
-void rec(int num){
+void rec(){
+
   switch (num){
-    case 0:
-    while(true){
+    case 3:
+    while(led_switch==1){
     for (int i=1;i<10;i++){
       analogWrite(led3,i);
       delay(20);
@@ -44,13 +46,16 @@ void rec(int num){
       analogWrite(led3,i);
       delay(20);
     }}
+    led_switch =1;
     break;
     
-    case 1:
-    digitalWrite(led3,HIGH);
+    case 4:
+    analogWrite(led3,25);
     break;
-    case 2:
+    
+    case 5:
     digitalWrite(led3,LOW);
+    break;
     
     default:
  

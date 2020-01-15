@@ -1,6 +1,6 @@
-//将所有的过程全部放在rec_py_signal中,这样可以模块化各个过程，不好的地方在于，无法杜绝嵌套产生的循环
-int led = 3;//pwm
-int ON = 12;
+#include <Wire.h>
+byte send2slave1_num=0;
+int ON = 13;
 int pump_nose = 4;
 int pump_left = 5;
 int pump_right = 6;
@@ -30,13 +30,14 @@ unsigned long choice_time;
 void setup() {
   // put your setup code here, to run once:
 pinMode(ON,INPUT);
-pinMode(led,OUTPUT);digitalWrite(led,LOW);
+
 pinMode(pump_nose,OUTPUT);digitalWrite(pump_nose,LOW);
 pinMode(pump_left,OUTPUT);digitalWrite(pump_left,LOW);
 pinMode(pump_right,OUTPUT);digitalWrite(pump_right,LOW);
 pinMode(ir_nose,INPUT);digitalWrite(ir_nose,LOW);
 pinMode(ir_left,INPUT);digitalWrite(ir_left,LOW);
 pinMode(ir_right,INPUT);digitalWrite(ir_right,LOW);
+Wire.begin();
 Serial.begin(9600);
 }
 ////////////////////////////////////////////////
@@ -72,7 +73,6 @@ void rec_process(int process){
   switch (process)
   {
     case 0://waiting for nosepoke
-      digitalWrite(led,LOW);
       do{Read_ir();}while(ir[0]==0);
       nose_poke_time = millis();
       Serial.println("Stat1: nose_poke");
@@ -81,12 +81,13 @@ void rec_process(int process){
       break;
 
     case 1://waiting for choice with led flash , mouse should choose left
-    
-      if (temp[i]==0){do{led_flash(led);}while(on_signal>0.5 && ir[1]==0 && ir[2]==0);}
-      else{do{led_on(led);}while(on_signal>0.5 && ir[1]==0 && ir[2]==0);}
+      if (temp[i]==0){send2slave1_num=3;}else{send2slave1_num=4;}
+      write_data(1,send2slave1_num);
       
+      while(on_signal>0.5 && ir[1]==0 && ir[2]==0){;}//阻塞进程，什么也不做直至条件为false
+      send2slave1_num=5;
+      write_data(1,send2slave1_num);      
       choice_time = millis();    
-      digitalWrite(led,LOW);
       Serial.print("Stat2: choice");    
       if (ir[1]==1){
         Serial.print("_l");
@@ -123,48 +124,38 @@ void rec_py_signal(int py_signal){
   switch (py_signal)
   {
     case 48://nose_pump
-      digitalWrite(led,LOW);
       water_deliver(pump_nose,5);
       break;
     case 49://left_pump
-      digitalWrite(led,LOW);
       water_deliver(pump_left,7);
       break;
     case 50://right_pump
-      digitalWrite(led,LOW);
       water_deliver(pump_right,5);
       break;
+    case 51://led_flash for ~2s
+      send2slave1_num=3;
+      write_data(1,send2slave1_num);
+      for (int k = 200;k>0;k--){
+        Read_ir();
+        delay(10);}
+      send2slave1_num=5;
+      write_data(1,send2slave1_num);
+      break;
+    case 52: //led_continuous on for ~2s
+      send2slave1_num=4;
+      write_data(1,send2slave1_num);
+      for (int k = 200;k>0;k--){
+        Read_ir();
+        delay(10);}
+      send2slave1_num=5;
+      write_data(1,send2slave1_num);
+      break;
+    case 53: //led_off
+      send2slave1_num=5;
+      write_data(1,send2slave1_num);
     default:
     break;}}
   
-void led_flash(int port){
-  for (int k = 2;k>=0;k=k-1){
-    for(int j=0;j<=50;j=j+2){
-      analogWrite(led,j);
-      delay(55-j);
-      Read_ir();
-      if (Serial.available()){
-        int py_signal = Serial.read();
-      rec_py_signal(py_signal);}
-  }
-    for(int j=50;j>=0;j=j-2){
-      analogWrite(led,i);
-      delay(55-j);
-      Read_ir();
-      if (Serial.available()){
-        int py_signal = Serial.read();
-      rec_py_signal(py_signal);}
-  }
-}}
-
-void led_on(int port){
-    analogWrite(led,50);
-    delay(10);
-    Read_ir();
-    if (Serial.available()){
-      int py_signal = Serial.read();
-      rec_py_signal(py_signal);}
-}
 
 void Read_ir(){
 //  int ir_nose = A0;
@@ -182,13 +173,13 @@ void Read_ir(){
   if (ir_nose_value< 500 && ir_nose_value>5) {ir[0] = 1;}else{ir[0] = 0;} 
   if (ir_left_value< 900 && ir_left_value>5) {ir[1] = 1;}else{ir[1] = 0;} 
   if (ir_right_value< 800 && ir_right_value>5) {ir[2] = 1;}else{ir[2] = 0;} 
-  Serial.print(ir_nose_value);Serial.print(" ");
-  Serial.print(ir_left_value);Serial.print(" ");
-  Serial.print(ir_right_value);Serial.print(" ");
-  Serial.print(ir[0]);Serial.print(" ");
-  Serial.print(ir[1]);Serial.print(" ");
-  Serial.println(ir[2]); 
-  delay(200);
+//  Serial.print(ir_nose_value);Serial.print(" ");
+//  Serial.print(ir_left_value);Serial.print(" ");
+//  Serial.print(ir_right_value);Serial.print(" ");
+//  Serial.print(ir[0]);Serial.print(" ");
+//  Serial.print(ir[1]);Serial.print(" ");
+//  Serial.println(ir[2]); 
+//  delay(200);
   }else{
     i = 0;
     Trial_num = 0;  
@@ -218,3 +209,11 @@ void water_deliver(int pump, int milliseconds){
 digitalWrite(pump,HIGH);
 delay(milliseconds);
 digitalWrite(pump,LOW);  }
+void write_data(int slave,byte send2slave1_num){
+  Wire.beginTransmission(slave);
+  Wire.write(send2slave1_num);
+  Serial.print("send ");
+  Serial.print(send2slave1_num);
+  Serial.print(" to slave");
+  Serial.println(slave);
+  Wire.endTransmission();}
