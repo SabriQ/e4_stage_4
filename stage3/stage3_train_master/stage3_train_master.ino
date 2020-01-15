@@ -72,9 +72,10 @@ Serial.begin(9600);
 void loop() {
   // put your main code here, to run repeatedly:
   
-  //context initialization  @ context 0
+  //context initialization  @ context 1（中间context）
+  send2slave1_num = 1;
   write_data(1,send2slave1_num);
-  
+    
   for (i;i<trial_length;i++){  
     rec_process(0);//waiting for nose-poke @ left-left
     //rec_process(1);//waiting for nose-poke @ left-right
@@ -108,6 +109,10 @@ void loop() {
       Serial.println(ctx_Rext_time);
      }
    Serial.println("All done!");
+   
+  //context set  @ context 1（中间context）
+  send2slave1_num = 1;
+  write_data(1,send2slave1_num);
 }
 ///////////////////////////////////////////////
 void rec_process(int process){

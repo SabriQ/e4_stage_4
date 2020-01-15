@@ -8,7 +8,7 @@ int c_0=5;
 int c_1=6;
 int c_2=7;
 //variables
-byte num;
+byte num=5;// default to let led (if there is ) turned off
 int ctx[3];
 int c_ctx=0;
 //int ctx[2];
@@ -79,7 +79,7 @@ void rec(int num){
       if (c_ctx==0){digitalWrite(dir,HIGH);}
       else if(c_ctx==2){digitalWrite(dir,LOW);}
       else{c_ctx=1;}
-      do{Read_ctx();pulse_stepper(pul, 40);}while(ctx[0]==0 && ctx[1]==0);
+      do{Read_ctx();pulse_stepper(pul, 40);}while(ctx[1]==0);
       digitalWrite(ena,HIGH);
       c_ctx=1;
       break;
