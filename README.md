@@ -40,7 +40,7 @@ Some details: A4, A5 in each Arduino nano are necessary for IIC communication.
 	Time_structure:
 		nosepoke
 		choice
-	
+
 ## Stage5
 	Aim: for training, testing and recording with (paired led and context) dependent forced choice
 	Time_structure:
@@ -59,3 +59,34 @@ Some details: A4, A5 in each Arduino nano are necessary for IIC communication.
 		choice
 		context reverse enter
 		context reverse exit
+## Test
+
+
+
+|           | cue_1             | cue2              | cue_blank |
+| --------- | ----------------- | ----------------- | --------- |
+| ctx_1     | training(**R**:L) | T3(R:L)           | T1(R:L)   |
+| ctx_2     | T3(R:L)           | training(R:**L**) | T1(R:L)   |
+| ctx_blank | T2(R:L)           | T2(R:L)           | T4(R:L)   |
+
+cue_blank:  no cue or a different cue that could attract the attention of mouse
+
+ctx_bank: a ctx in which no info could instruct the mice to make decision
+
+T1: test for contribution of only context to the behavioral performance 
+
+T2: test for contribution of only cue to the behavioral performance
+
+T3: conflict between the cue and context,   complementary for the dominant contribution of cue?
+
+T4: chance level of behavioral performance
+
+Interesting scientific questions:
+
+topic I:  only for context
+
+​	cell activities, ctx, behavioral readout 
+
+​		
+
+topic II: context vs cue
